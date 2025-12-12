@@ -4,6 +4,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Path2D;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /*
- Single-file Stock Market Simulator
+ Single-file Stock Market Simulator with TradingView-Style Charts
  - Compile: javac MainApp.java
  - Run:     java MainApp
  - Data files (auto-created) stored under ./data/
@@ -162,7 +163,8 @@ class Stock {
 
     private void addHistory(double p) {
         history.add(new PricePoint(LocalDateTime.now(), p));
-        if (history.size() > 200) history.remove(0);
+        // Keep 100 points for a cleaner chart view
+        if (history.size() > 100) history.remove(0);
     }
 
     public synchronized List<PricePoint> getHistory() { return new ArrayList<>(history); }
@@ -260,47 +262,51 @@ class MarketEngine {
     private final Random rng = new Random();
 
     public MarketEngine() {
-        // --- Preloaded Stock List (Indian + Global) ---
-        addStock(new Stock("Reliance Industries", "RELI", 2850.00));
-        addStock(new Stock("TCS", "TCS", 3450.00));
-        addStock(new Stock("Infosys", "INFY", 1450.50));
-        addStock(new Stock("HCL Technologies", "HCLT", 1120.40));
-        addStock(new Stock("Wipro", "WIPRO", 490.20));
-        addStock(new Stock("Maruti Suzuki", "MARUTI", 10725.50));
-        addStock(new Stock("Tata Motors", "TATAMOT", 925.10));
-        addStock(new Stock("HDFC Bank", "HDFCBANK", 1590.45));
+        // --- Preloaded Stock List ---
+ addStock(new Stock("Reliance Industries", "RELI", 2964.42));
+        addStock(new Stock("TCS", "TCS", 3469.68));
+        addStock(new Stock("HDFC Bank", "HDFCBANK", 1632.54));
+        addStock(new Stock("Infosys", "INFY", 1426.57));
         addStock(new Stock("ICICI Bank", "ICICIBANK", 1045.35));
-        addStock(new Stock("State Bank of India", "SBIN", 845.25));
-        addStock(new Stock("Bajaj Finance", "BAJFIN", 6980.75));
-        addStock(new Stock("Asian Paints", "ASIANPNT", 3200.10));
-        addStock(new Stock("ITC Ltd", "ITC", 470.35));
-        addStock(new Stock("Adani Enterprises", "ADANIENT", 2325.60));
-        addStock(new Stock("Larsen & Toubro", "LT", 3580.90));
-        addStock(new Stock("Bharti Airtel", "AIRTEL", 1030.25));
-        addStock(new Stock("Sun Pharma", "SUNPHARMA", 1455.15));
-        addStock(new Stock("Titan Company", "TITAN", 3450.80));
-        addStock(new Stock("Nestle India", "NESTLE", 25900.00));
         addStock(new Stock("Hindustan Unilever", "HUL", 2530.25));
-        addStock(new Stock("PowerGrid Corp", "POWERGRID", 310.10));
-        addStock(new Stock("ONGC", "ONGC", 265.45));
-        addStock(new Stock("Coal India", "COALIND", 410.60));
+        addStock(new Stock("ITC Ltd", "ITC", 470.35));
+        addStock(new Stock("State Bank of India", "SBIN", 845.25));
+        addStock(new Stock("Bharti Airtel", "AIRTEL", 1130.25));
+        addStock(new Stock("Larsen & Toubro", "LT", 3580.90));
+        addStock(new Stock("Bajaj Finance", "BAJFIN", 6980.75));
+        addStock(new Stock("Maruti Suzuki", "MARUTI", 10807.42));
+        addStock(new Stock("Titan Company", "TITAN", 3602.59));
+        addStock(new Stock("Sun Pharma", "SUNPHARMA", 1455.15));
+        addStock(new Stock("Mahindra & Mahindra", "M&M", 1850.50));
+        addStock(new Stock("Kotak Mahindra", "KOTAKBANK", 1750.10));
+        addStock(new Stock("HCL Technologies", "HCLT", 1096.61));
+        addStock(new Stock("Wipro", "WIPRO", 499.15));
+        addStock(new Stock("Adani Enterprises", "ADANIENT", 2300.66));
         addStock(new Stock("Adani Green", "ADANIGRN", 1210.75));
-        addStock(new Stock("JSW Steel", "JSWSTL", 930.25));
+        addStock(new Stock("Asian Paints", "ASIANPNT", 2950.10));
+        addStock(new Stock("Tata Motors", "TATAMOT", 965.10));
+        addStock(new Stock("Tata Steel", "TATASTEEL", 145.40));
+        addStock(new Stock("PowerGrid Corp", "POWERGRID", 310.10));
         addStock(new Stock("NTPC", "NTPC", 310.40));
-        addStock(new Stock("Apple Inc.", "AAPL", 150.00));
-        addStock(new Stock("Microsoft Corp", "MSFT", 340.00));
-        addStock(new Stock("Amazon", "AMZN", 130.00));
-        addStock(new Stock("Tesla Motors", "TSLA", 220.00));
-        addStock(new Stock("Google (Alphabet)", "GOOG", 125.00));
-        addStock(new Stock("Meta Platforms", "META", 250.00));
-        addStock(new Stock("NVIDIA Corp", "NVDA", 900.00));
-        addStock(new Stock("Adobe Inc.", "ADBE", 510.00));
-        addStock(new Stock("Intel Corp", "INTC", 34.00));
-        addStock(new Stock("Oracle", "ORCL", 108.00));
-        addStock(new Stock("Coca-Cola", "KO", 58.00));
-        addStock(new Stock("PepsiCo", "PEP", 175.00));
-        addStock(new Stock("Toyota Motor", "TM", 190.00));
-        addStock(new Stock("Sony Group", "SONY", 88.00));
+        addStock(new Stock("Zomato", "ZOMATO", 165.20));
+        
+        // --- US / GLOBAL TECH ---
+        addStock(new Stock("Apple Inc.", "AAPL", 175.00));
+        addStock(new Stock("Microsoft Corp", "MSFT", 420.00));
+        addStock(new Stock("NVIDIA Corp", "NVDA", 929.35));
+        addStock(new Stock("Amazon", "AMZN", 180.00));
+        addStock(new Stock("Google (Alphabet)", "GOOGL", 165.00));
+        addStock(new Stock("Meta Platforms", "META", 490.00));
+        addStock(new Stock("Tesla Motors", "TSLA", 216.25));
+        addStock(new Stock("Netflix", "NFLX", 610.00));
+        addStock(new Stock("AMD", "AMD", 170.00));
+        addStock(new Stock("Intel Corp", "INTC", 35.00));
+        
+        // --- CRYPTO ---
+        addStock(new Stock("Bitcoin", "BTC", 64129.71));
+        addStock(new Stock("Ethereum", "ETH", 3431.88));
+        addStock(new Stock("Solana", "SOL", 145.50));
+        addStock(new Stock("Binance Coin", "BNB", 590.20));
     }
 
     private void addStock(Stock s) {
@@ -315,7 +321,7 @@ class MarketEngine {
         return stocks.get(symbol);
     }
 
-    /** Start market price simulation and call the given Runnable after each tick */
+    /** Start market price simulation */
     public void start(Runnable onTick) {
         if (scheduler != null && !scheduler.isShutdown()) return;
 
@@ -330,22 +336,19 @@ class MarketEngine {
             if (onTick != null) {
                 try { onTick.run(); } catch (Exception ignored) {}
             }
-        }, 0, 3, TimeUnit.SECONDS);
+        }, 0, 1000, TimeUnit.MILLISECONDS); // Faster updates for smoother charts (1 sec)
     }
 
     public void stop() {
         if (scheduler != null) scheduler.shutdownNow();
     }
 
-    /** Simulate ±2% change, occasional random spike */
     private void simulateTick() {
         for (Stock s : stocks.values()) {
             double price = s.getPrice();
-            double pctChange = (rng.nextDouble() * 4.0) - 2.0; // -2% to +2%
+            // Smoother random walk
+            double pctChange = (rng.nextGaussian() * 0.5); 
             double newPrice = price + price * pctChange / 100.0;
-            if (rng.nextDouble() < 0.03) {
-                newPrice *= (1 + (rng.nextDouble() * 0.08 - 0.04)); // random spike
-            }
             s.setPrice(newPrice);
         }
     }
@@ -418,7 +421,6 @@ class Controller {
                 String sym = r[1];
                 int qty = Integer.parseInt(r[2]);
                 double price = Double.parseDouble(r[3]);
-                // timestamp r[4] exists in CSV but constructor sets now; ok for display
                 Transaction t = new Transaction(type, sym, qty, price);
                 transactions.add(0, t);
             } catch (Exception ignored) {}
@@ -546,25 +548,26 @@ class DarkView extends JFrame {
         setSize(1200, 740);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        getContentPane().setBackground(new Color(24, 28, 33));
+        getContentPane().setBackground(new Color(19, 23, 34)); // TradingView Dark BG
         setLayout(new BorderLayout());
 
         // Top bar
         JPanel top = new JPanel(new BorderLayout());
-        top.setBackground(new Color(34, 38, 44));
+        top.setBackground(new Color(28, 32, 45));
         top.setBorder(new EmptyBorder(10,12,10,12));
-        JLabel title = new JLabel("Quantum Trader - Simulator");
+        JLabel title = new JLabel("Quantum Trader");
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         top.add(title, BorderLayout.WEST);
         balanceLabel = new JLabel("Balance: ₹0.00");
-        balanceLabel.setForeground(Color.WHITE);
+        balanceLabel.setForeground(new Color(0, 227, 150)); // Teal for money
+        balanceLabel.setFont(new Font("Consolas", Font.BOLD, 16));
         top.add(balanceLabel, BorderLayout.EAST);
         add(top, BorderLayout.NORTH);
 
         // Left nav
         JPanel left = new JPanel();
-        left.setBackground(new Color(20,24,28));
+        left.setBackground(new Color(19, 23, 34));
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         left.setBorder(new EmptyBorder(12,12,12,12));
         JButton b1 = makeNavButton("Portfolio");
@@ -578,11 +581,11 @@ class DarkView extends JFrame {
         // Center cards
         CardLayout cl = new CardLayout();
         JPanel centerCards = new JPanel(cl);
-        centerCards.setBackground(new Color(24,28,33));
+        centerCards.setBackground(new Color(19, 23, 34));
 
         // Portfolio panel
         JPanel portPanel = new JPanel(new BorderLayout());
-        portPanel.setBackground(new Color(24,28,33));
+        portPanel.setBackground(new Color(19, 23, 34));
         portfolioModel = new DefaultTableModel(new String[]{"Symbol","Qty","Avg Price (₹)","Cur Price","Value (₹)","P/L (₹)"},0) {
             public boolean isCellEditable(int r,int c){return false;}
         };
@@ -590,26 +593,46 @@ class DarkView extends JFrame {
         styleTable(portfolioTable);
         portPanel.add(new JScrollPane(portfolioTable), BorderLayout.CENTER);
 
-        // Chart panel
+        // Chart panel (UPDATED TO LOOK LIKE TRADINGVIEW)
         JPanel chartPanel = new JPanel(new BorderLayout());
-        chartPanel.setBackground(new Color(24,28,33));
+        chartPanel.setBackground(new Color(19, 23, 34));
         chartCanvas = new ChartCanvas();
         chartPanel.add(chartCanvas, BorderLayout.CENTER);
 
         // Trade panel
         JPanel tradePanel = new JPanel();
-        tradePanel.setBackground(new Color(24,28,33));
+        tradePanel.setBackground(new Color(19, 23, 34));
         tradePanel.setLayout(new BoxLayout(tradePanel, BoxLayout.Y_AXIS));
-        tradePanel.setBorder(new EmptyBorder(12,12,12,12));
-        JTextField symField = new JTextField(); symField.setMaximumSize(new Dimension(Integer.MAX_VALUE,30));
-        JTextField qtyField = new JTextField(); qtyField.setMaximumSize(new Dimension(Integer.MAX_VALUE,30));
-        JButton buyBtn = new JButton("BUY"); buyBtn.setBackground(new Color(24,160,80)); buyBtn.setForeground(Color.BLACK);
-        JButton sellBtn = new JButton("SELL"); sellBtn.setBackground(new Color(220,60,60)); sellBtn.setForeground(Color.WHITE);
-        tradePanel.add(new JLabel("Symbol (e.g. ACME)")); tradePanel.add(symField);
-        tradePanel.add(Box.createVerticalStrut(8));
-        tradePanel.add(new JLabel("Quantity")); tradePanel.add(qtyField);
-        tradePanel.add(Box.createVerticalStrut(12));
-        JPanel tradeButtons = new JPanel(); tradeButtons.setBackground(new Color(24,28,33));
+        tradePanel.setBorder(new EmptyBorder(20,40,20,40));
+        
+        JLabel tradeTitle = new JLabel("Execute Order");
+        tradeTitle.setForeground(Color.WHITE);
+        tradeTitle.setFont(new Font("Segoe UI", Font.PLAIN, 24));
+        tradeTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JTextField symField = new JTextField(); symField.setMaximumSize(new Dimension(Integer.MAX_VALUE,35));
+        JTextField qtyField = new JTextField(); qtyField.setMaximumSize(new Dimension(Integer.MAX_VALUE,35));
+        
+        JButton buyBtn = new JButton("BUY"); 
+        buyBtn.setBackground(new Color(0, 227, 150)); // Green
+        buyBtn.setForeground(Color.BLACK);
+        buyBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        JButton sellBtn = new JButton("SELL"); 
+        sellBtn.setBackground(new Color(255, 69, 96)); // Red
+        sellBtn.setForeground(Color.WHITE);
+        sellBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        tradePanel.add(tradeTitle);
+        tradePanel.add(Box.createVerticalStrut(20));
+        tradePanel.add(makeLabel("Symbol")); tradePanel.add(symField);
+        tradePanel.add(Box.createVerticalStrut(15));
+        tradePanel.add(makeLabel("Quantity")); tradePanel.add(qtyField);
+        tradePanel.add(Box.createVerticalStrut(25));
+        
+        JPanel tradeButtons = new JPanel(new GridLayout(1,2, 10, 0)); 
+        tradeButtons.setBackground(new Color(19, 23, 34));
+        tradeButtons.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         tradeButtons.add(buyBtn); tradeButtons.add(sellBtn);
         tradePanel.add(tradeButtons);
 
@@ -620,8 +643,9 @@ class DarkView extends JFrame {
 
         // Right: market + transactions
         JPanel right = new JPanel(new BorderLayout(8,8));
-        right.setBackground(new Color(24,28,33));
-        right.setPreferredSize(new Dimension(420,0));
+        right.setBackground(new Color(19, 23, 34));
+        right.setBorder(new EmptyBorder(0,5,0,0));
+        right.setPreferredSize(new Dimension(380,0));
 
         marketModel = new DefaultTableModel(new String[]{"Name","Symbol","Price (₹)","Δ (%)"},0) {
             public boolean isCellEditable(int r,int c){return false;}
@@ -631,14 +655,14 @@ class DarkView extends JFrame {
         marketTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         right.add(new JScrollPane(marketTable), BorderLayout.CENTER);
 
-        txModel = new DefaultTableModel(new String[]{"Type","Symbol","Qty","Price","Time"},0) {
+        txModel = new DefaultTableModel(new String[]{"Type","Symbol","Qty","Price"},0) {
             public boolean isCellEditable(int r,int c){return false;}
         };
         txTable = new JTable(txModel);
         styleTable(txTable);
-        txTable.setRowHeight(22);
+        txTable.setRowHeight(24);
         JScrollPane txScroll = new JScrollPane(txTable);
-        txScroll.setPreferredSize(new Dimension(420, 180));
+        txScroll.setPreferredSize(new Dimension(380, 200));
         right.add(txScroll, BorderLayout.SOUTH);
 
         add(right, BorderLayout.EAST);
@@ -684,40 +708,63 @@ class DarkView extends JFrame {
             } catch (NumberFormatException ex) { JOptionPane.showMessageDialog(this, "Invalid quantity"); }
         });
 
+        // Default selection
+        chartCanvas.setStock(engine.getStock("TITAN"));
+        symField.setText("TITAN");
+
         // start engine updates and UI refresh
         engine.start(() -> SwingUtilities.invokeLater(this::refreshAll));
         refreshAll();
     }
 
+    private JLabel makeLabel(String txt) {
+        JLabel l = new JLabel(txt);
+        l.setForeground(Color.GRAY);
+        l.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return l;
+    }
+
     private JButton makeNavButton(String text) {
         JButton b = new JButton(text);
         b.setMaximumSize(new Dimension(220,44));
-        b.setBackground(new Color(34,38,44));
+        b.setBackground(new Color(28, 32, 45));
         b.setForeground(Color.WHITE);
         b.setFont(new Font("Segoe UI", Font.BOLD, 14));
         b.setFocusPainted(false);
+        b.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(45, 50, 65)), 
+            BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
         return b;
     }
 
     private void styleTable(JTable t) {
-        t.setBackground(new Color(34,38,44));
-        t.setForeground(Color.WHITE);
-        t.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        t.getTableHeader().setBackground(new Color(24,28,33));
+        t.setBackground(new Color(19, 23, 34));
+        t.setForeground(new Color(209, 212, 220));
+        t.setFont(new Font("Consolas", Font.PLAIN, 13));
+        t.getTableHeader().setBackground(new Color(28, 32, 45));
         t.getTableHeader().setForeground(Color.WHITE);
+        t.getTableHeader().setBorder(null);
+        t.setGridColor(new Color(43, 43, 67));
+        t.setShowVerticalLines(false);
     }
 
     public void refreshAll() {
-        // update balance label from controller user
+        // update balance label
         User u = controller.getCurrentUser();
         if (u != null) balanceLabel.setText("Balance: ₹" + df.format(u.getBalance()));
         else balanceLabel.setText("Balance: ₹0.00");
 
         // market table
+        int selectedRow = marketTable.getSelectedRow();
         marketModel.setRowCount(0);
         for (Stock s : engine.getStocks()) {
-            marketModel.addRow(new Object[]{s.getName(), s.getSymbol(), s.getPrice(), String.format("%.2f%%", s.getDailyChangePercent())});
+            double chg = s.getDailyChangePercent();
+            String chgStr = (chg >= 0 ? "+" : "") + String.format("%.2f%%", chg);
+            marketModel.addRow(new Object[]{s.getName(), s.getSymbol(), s.getPrice(), chgStr});
         }
+        if (selectedRow >= 0 && selectedRow < marketModel.getRowCount()) 
+            marketTable.setRowSelectionInterval(selectedRow, selectedRow);
 
         // portfolio
         portfolioModel.setRowCount(0);
@@ -732,56 +779,126 @@ class DarkView extends JFrame {
         // transactions
         txModel.setRowCount(0);
         for (Transaction t : controller.getTransactions()) {
-            txModel.addRow(new Object[]{t.getType(), t.getSymbol(), t.getQuantity(), String.format("%.2f", t.getPrice()), t.getTimestamp()});
+            txModel.addRow(new Object[]{t.getType(), t.getSymbol(), t.getQuantity(), String.format("%.2f", t.getPrice())});
         }
 
         chartCanvas.repaint();
     }
 
-    /* Lightweight chart canvas */
+    /* * NEW: High-Quality TradingView Style Chart Canvas 
+     * Implements specific colors, gradients, and grid lines.
+     */
     private static class ChartCanvas extends JPanel {
         private Stock stock;
+        
+        // TradingView Colors
+        private final Color BG_COLOR = new Color(19, 23, 34);
+        private final Color GRID_COLOR = new Color(43, 43, 67);
+        private final Color LINE_COLOR = new Color(0, 227, 150); // Neon Green/Teal
+        private final Color FILL_TOP = new Color(0, 227, 150, 60);
+        private final Color FILL_BOTTOM = new Color(0, 227, 150, 0);
+        private final Color TEXT_COLOR = new Color(120, 123, 134);
+
         ChartCanvas() {
-            setBackground(new Color(18,20,22));
+            setBackground(BG_COLOR);
             setPreferredSize(new Dimension(600,420));
-            setBorder(new EmptyBorder(12,12,12,12));
         }
+
         public void setStock(Stock s) { this.stock = s; repaint(); }
+
         @Override
         protected void paintComponent(Graphics g0) {
             super.paintComponent(g0);
             if (stock == null) return;
+            
             List<Stock.PricePoint> h = stock.getHistory();
             if (h.size() < 2) return;
+
             Graphics2D g = (Graphics2D) g0;
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            int w = getWidth(), hgt = getHeight();
-            int margin = 30;
-            int gw = w - 2*margin, gh = hgt - 2*margin;
+
+            int w = getWidth();
+            int hgt = getHeight();
+            int paddingRight = 60; // Space for price labels
+            int paddingBottom = 20;
+            int chartW = w - paddingRight;
+            int chartH = hgt - paddingBottom;
+
+            // 1. Calculate Scale
             double min = Double.MAX_VALUE, max = Double.MIN_VALUE;
-            for (Stock.PricePoint p : h) { min = Math.min(min, p.price); max = Math.max(max, p.price); }
+            for (Stock.PricePoint p : h) { 
+                min = Math.min(min, p.price); 
+                max = Math.max(max, p.price); 
+            }
             if (min == max) { min -= 1; max += 1; }
+            double range = max - min;
+
+            // 2. Draw Grid & Labels
+            g.setColor(GRID_COLOR);
+            g.setStroke(new BasicStroke(1));
+            
+            // Horizontal grid lines
+            int gridRows = 5;
+            g.setFont(new Font("SansSerif", Font.PLAIN, 10));
+            for (int i = 0; i <= gridRows; i++) {
+                int y = (int) (chartH - (i * (chartH / (double)gridRows)));
+                g.drawLine(0, y, chartW, y);
+                
+                // Price Label on Right Axis
+                double priceLabel = min + (i * (range / gridRows));
+                g.setColor(TEXT_COLOR);
+                g.drawString(String.format("%.2f", priceLabel), chartW + 5, y + 4);
+                g.setColor(GRID_COLOR);
+            }
+            
+            // Vertical grid lines
+            int gridCols = 6;
+            for (int i = 0; i <= gridCols; i++) {
+                int x = (int) (i * (chartW / (double)gridCols));
+                g.drawLine(x, 0, x, chartH);
+            }
+
+            // 3. Create Line Path & Fill Path
             int n = h.size();
-            int[] xs = new int[n], ys = new int[n];
-            for (int i=0;i<n;i++) {
-                xs[i] = margin + (int)((double)i/(n-1) * gw);
-                ys[i] = margin + gh - (int)((h.get(i).price - min)/(max-min) * gh);
+            Path2D.Double linePath = new Path2D.Double();
+            Path2D.Double fillPath = new Path2D.Double();
+
+            double xStep = (double) chartW / (n - 1);
+            
+            // Start points
+            double firstY = chartH - ((h.get(0).price - min) / range * chartH);
+            linePath.moveTo(0, firstY);
+            fillPath.moveTo(0, chartH); // Bottom left
+            fillPath.lineTo(0, firstY);
+
+            for (int i = 1; i < n; i++) {
+                double x = i * xStep;
+                double y = chartH - ((h.get(i).price - min) / range * chartH);
+                linePath.lineTo(x, y);
+                fillPath.lineTo(x, y);
             }
-            // area fill
-            g.setColor(new Color(30,80,50,60));
-            for (int i=0;i<n-1;i++) {
-                int[] px = {xs[i], xs[i+1], xs[i+1], xs[i]};
-                int[] py = {ys[i], ys[i+1], margin+gh, margin+gh};
-                g.fillPolygon(px, py, 4);
-            }
-            // line
-            g.setColor(new Color(0,180,100));
-            g.setStroke(new BasicStroke(2.5f));
-            for (int i=0;i<n-1;i++) g.drawLine(xs[i], ys[i], xs[i+1], ys[i+1]);
-            // labels
+
+            fillPath.lineTo((n-1)*xStep, chartH); // Bottom right
+            fillPath.closePath();
+
+            // 4. Draw Gradient Fill
+            GradientPaint gp = new GradientPaint(0, 0, FILL_TOP, 0, chartH, FILL_BOTTOM);
+            g.setPaint(gp);
+            g.fill(fillPath);
+
+            // 5. Draw Line
+            g.setColor(LINE_COLOR);
+            g.setStroke(new BasicStroke(2.0f));
+            g.draw(linePath);
+
+            // 6. Draw Header Info
             g.setColor(Color.WHITE);
-            g.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            g.drawString(stock.getSymbol() + "  ₹" + String.format("%.2f", stock.getPrice()), margin+6, margin+14);
+            g.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            g.drawString(stock.getSymbol(), 20, 30);
+            
+            g.setColor(LINE_COLOR);
+            g.setFont(new Font("Consolas", Font.BOLD, 16));
+            g.drawString("₹" + String.format("%.2f", stock.getPrice()), 20, 55);
         }
     }
 }
